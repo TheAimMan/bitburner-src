@@ -16,6 +16,7 @@ export const isSleeveCrimeWork = (w: SleeveWorkClass | null): w is SleeveCrimeWo
 export class SleeveCrimeWork extends SleeveWorkClass {
   type: SleeveWorkType.CRIME = SleeveWorkType.CRIME;
   crimeType: CrimeType;
+  tasksCompleted = 0;
   cyclesWorked = 0;
   constructor(crimeType?: CrimeType) {
     super();
@@ -38,21 +39,25 @@ export class SleeveCrimeWork extends SleeveWorkClass {
     this.cyclesWorked += cycles;
     if (this.cyclesWorked < this.cyclesNeeded()) return;
 
-    const crime = this.getCrime();
-    const gains = this.getExp(sleeve);
-    const success = Math.random() < crime.successRate(sleeve);
-    if (success) {
-      Player.karma -= crime.karma * sleeve.syncBonus();
-      Player.numPeopleKilled += crime.kills;
-    } else gains.money = 0;
-    applySleeveGains(sleeve, gains, success ? 1 : 0.25);
-    this.cyclesWorked -= this.cyclesNeeded();
+    while (this.cyclesWorked > this.cyclesNeeded()) {
+      const crime = this.getCrime();
+      const gains = this.getExp(sleeve);
+      const success = Math.random() < crime.successRate(sleeve);
+      if (success) {
+        Player.karma -= crime.karma * sleeve.syncBonus();
+        Player.numPeopleKilled += crime.kills;
+      } else gains.money = 0;
+      applySleeveGains(sleeve, gains, success ? 1 : 0.25);
+      this.tasksCompleted++;
+      this.cyclesWorked -= this.cyclesNeeded();
+    }
   }
 
   APICopy() {
     return {
-      type: SleeveWorkType.CRIME as "CRIME",
+      type: SleeveWorkType.CRIME as const,
       crimeType: this.crimeType,
+      tasksCompleted: this.tasksCompleted,
       cyclesWorked: this.cyclesWorked,
       cyclesNeeded: this.cyclesNeeded(),
     };

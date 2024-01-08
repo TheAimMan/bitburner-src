@@ -80,6 +80,8 @@ export const RamCostConstants = {
   InfiltrationGetLocations: 5,
   InfiltrationGetInfiltrations: 15,
   StanekAcceptGift: 2,
+
+  CycleTiming: 1,
 };
 
 function SF4Cost(cost: number): () => number {
@@ -124,6 +126,8 @@ const stock = {
   hasTIXAPIAccess: 0.05,
   has4SData: 0.05,
   has4SDataTIXAPI: 0.05,
+  getBonusTime: 0,
+  nextUpdate: RamCostConstants.CycleTiming,
   getSymbols: RamCostConstants.GetStock,
   getPrice: RamCostConstants.GetStock,
   getOrganization: RamCostConstants.GetStock,
@@ -177,6 +181,7 @@ const singularity = {
   getCompanyRep: SF4Cost(RamCostConstants.SingularityFn2 / 3),
   getCompanyFavor: SF4Cost(RamCostConstants.SingularityFn2 / 3),
   getCompanyFavorGain: SF4Cost(RamCostConstants.SingularityFn2 / 4),
+  getFactionInviteRequirements: SF4Cost(RamCostConstants.SingularityFn2),
   checkFactionInvitations: SF4Cost(RamCostConstants.SingularityFn2),
   joinFaction: SF4Cost(RamCostConstants.SingularityFn2),
   workForFaction: SF4Cost(RamCostConstants.SingularityFn2),
@@ -235,6 +240,29 @@ const gang = {
   setTerritoryWarfare: RamCostConstants.GangApiBase / 2,
   getChanceToWinClash: RamCostConstants.GangApiBase,
   getBonusTime: 0,
+  nextUpdate: RamCostConstants.CycleTiming,
+} as const;
+
+// Go API
+const go = {
+  makeMove: 4,
+  passTurn: 0,
+  getBoardState: 4,
+  getOpponent: 0,
+  resetBoardState: 0,
+  analysis: {
+    getValidMoves: 8,
+    getChains: 16,
+    getLiberties: 16,
+    getControlledEmptyNodes: 16,
+  },
+  cheat: {
+    getCheatSuccessChance: 1,
+    removeRouter: 8,
+    playTwoMoves: 8,
+    repairOfflineNode: 8,
+    destroyNode: 8,
+  },
 } as const;
 
 // Bladeburner API
@@ -243,6 +271,7 @@ const bladeburner = {
   getContractNames: RamCostConstants.BladeburnerApiBase / 10,
   getOperationNames: RamCostConstants.BladeburnerApiBase / 10,
   getBlackOpNames: RamCostConstants.BladeburnerApiBase / 10,
+  getNextBlackOp: RamCostConstants.BladeburnerApiBase / 2,
   getBlackOpRank: RamCostConstants.BladeburnerApiBase / 2,
   getGeneralActionNames: RamCostConstants.BladeburnerApiBase / 10,
   getSkillNames: RamCostConstants.BladeburnerApiBase / 10,
@@ -276,6 +305,7 @@ const bladeburner = {
   joinBladeburnerFaction: RamCostConstants.BladeburnerApiBase,
   joinBladeburnerDivision: RamCostConstants.BladeburnerApiBase,
   getBonusTime: 0,
+  nextUpdate: RamCostConstants.CycleTiming,
 } as const;
 
 const infiltration = {
@@ -355,6 +385,8 @@ const grafting = {
 const corporation = {
   hasCorporation: 0, // This one is free
   getConstants: 0,
+  getBonusTime: 0,
+  nextUpdate: RamCostConstants.CycleTiming,
   getIndustryData: RamCostConstants.CorporationInfo,
   getMaterialData: RamCostConstants.CorporationInfo,
   issueNewShares: RamCostConstants.CorporationAction,
@@ -376,7 +408,6 @@ const corporation = {
   issueDividends: RamCostConstants.CorporationAction,
   buyBackShares: RamCostConstants.CorporationAction,
   sellShares: RamCostConstants.CorporationAction,
-  getBonusTime: 0,
   sellMaterial: RamCostConstants.CorporationAction,
   sellProduct: RamCostConstants.CorporationAction,
   discontinueProduct: RamCostConstants.CorporationAction,
@@ -425,6 +456,7 @@ export const RamCosts: RamCostTree<NSFull> = {
   stock,
   singularity,
   gang,
+  go,
   bladeburner,
   infiltration,
   codingcontract,

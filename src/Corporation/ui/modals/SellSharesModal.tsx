@@ -61,7 +61,7 @@ export function SellSharesModal(props: IProps): React.ReactElement {
           <li>Selling shares will cause stock price to fall due to market forces.</li>
           <li>The money from selling your shares will go directly to you (NOT your Corporation).</li>
           <li>
-            You will not be able to sell shares again (or dissolve the corporation) for{" "}
+            You will not be able to sell shares again for{" "}
             <b>{corp.convertCooldownToString(corpConstants.sellSharesCooldown)}</b>.
           </li>
         </ul>
@@ -88,7 +88,7 @@ export function SellSharesModal(props: IProps): React.ReactElement {
           <>
             You will receive <Money money={profit} />.
             <br />
-            <b>{corp.name}</b>'s stock price will fall to <Money money={sharePrice} /> per share.
+            <b>{corp.name}</b>'s stock price will settle at <Money money={sharePrice} /> per share.
           </>
         )}
       </Typography>

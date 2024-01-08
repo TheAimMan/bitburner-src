@@ -1,4 +1,4 @@
-import { AugmentationName, CityName, CompletedProgramName, FactionName, LiteratureName } from "@enums";
+import { AugmentationName, CityName, CompletedProgramName, FactionName, LiteratureName, CompanyName } from "@enums";
 import { initBitNodeMultipliers } from "./BitNode/BitNode";
 import { Companies } from "./Company/Companies";
 import { resetIndustryResearchTrees } from "./Corporation/data/IndustryData";
@@ -34,9 +34,17 @@ function delayedDialog(message: string) {
 export function prestigeAugmentation(): void {
   initBitNodeMultipliers();
 
-  const maintainMembership = Player.factions.concat(Player.factionInvitations).filter(function (faction) {
-    return Factions[faction].getInfo().keep;
-  });
+  // Maintain invites to factions with the 'keepOnInstall' flag, and rumors about others
+  const maintainInvites = new Set<FactionName>();
+  const maintainRumors = new Set<FactionName>();
+  for (const facName of [...Player.factions, ...Player.factionInvitations]) {
+    if (Factions[facName].getInfo().keep) {
+      maintainInvites.add(facName);
+    } else {
+      maintainRumors.add(facName);
+    }
+  }
+
   Player.prestigeAugmentation();
 
   // Delete all Worker Scripts objects
@@ -84,11 +92,15 @@ export function prestigeAugmentation(): void {
   // Recalculate the bonus for circadian modulator aug
   initCircadianModulator();
 
-  Player.factionInvitations = Player.factionInvitations.concat(maintainMembership);
-  for (const factionName of maintainMembership) Factions[factionName].alreadyInvited = true;
+  Player.factionInvitations = Player.factionInvitations.concat([...maintainInvites]);
+  for (const factionName of maintainInvites) {
+    Factions[factionName].alreadyInvited = true;
+  }
   Player.reapplyAllAugmentations();
   Player.reapplyAllSourceFiles();
   Player.hp.current = Player.hp.max;
+
+  staneksGift.prestigeAugmentation();
 
   // Apply entropy from grafting
   Player.applyEntropy(Player.entropy);
@@ -144,11 +156,17 @@ export function prestigeAugmentation(): void {
     }
   }
 
+  // Bitnode 13: Church of the Machine God
   if (Player.hasAugmentation(AugmentationName.StaneksGift1, true)) {
     joinFaction(Factions[FactionName.ChurchOfTheMachineGod]);
+  } else if (Player.bitNodeN != 13) {
+    if (Player.augmentations.some((a) => a.name !== AugmentationName.NeuroFluxGovernor)) {
+      Factions[FactionName.ChurchOfTheMachineGod].isBanned = true;
+    }
   }
 
-  staneksGift.prestigeAugmentation();
+  // Hear rumors after all invites/bans
+  for (const factionName of maintainRumors) Player.receiveRumor(factionName);
 
   resetPidCounter();
   ProgramsSeen.clear();
@@ -230,7 +248,7 @@ export function prestigeSourceFile(isFlume: boolean): void {
 
   // BitNode 6: Bladeburners and BitNode 7: Bladeburners 2079
   if (Player.bitNodeN === 6 || Player.bitNodeN === 7) {
-    delayedDialog("NSA would like to have a word with you once you're ready.");
+    delayedDialog(`The ${CompanyName.NSA} would like to have a word with you once you're ready.`);
   }
 
   // BitNode 8: Ghost of Wall Street
@@ -245,12 +263,12 @@ export function prestigeSourceFile(isFlume: boolean): void {
   // BitNode 10: Digital Carbon
   if (Player.bitNodeN === 10) {
     delayedDialog(
-      "Seek out The Covenant if you'd like to purchase a new sleeve or two! And see what VitaLife in New Tokyo has to offer for you",
+      `Seek out ${FactionName.TheCovenant} if you'd like to purchase a new sleeve or two! And see what ${CompanyName.VitaLife} in ${CityName.NewTokyo} has to offer for you`,
     );
   }
 
-  // BitNode 12: Digital Carbon
-  if (Player.bitNodeN === 12 && Player.sourceFileLvl(10) > 100) {
+  // BitNode 12: The Recursion
+  if (Player.bitNodeN === 12 && Player.sourceFileLvl(12) > 100) {
     delayedDialog("Saynt_Garmo is watching you");
   }
 
@@ -274,6 +292,7 @@ export function prestigeSourceFile(isFlume: boolean): void {
 
     hserver.level = 100;
     hserver.cores = 10;
+    hserver.cpuCores = 10;
     hserver.cache = 5;
     hserver.updateHashRate(Player.mults.hacknet_node_money);
     hserver.updateHashCapacity();

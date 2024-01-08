@@ -5,68 +5,90 @@ import {
   AccordionDetails,
   Button,
   FormControl,
+  FormControlLabel,
   IconButton,
   InputLabel,
   MenuItem,
   Select,
   SelectChangeEvent,
   Typography,
+  RadioGroup,
+  Radio,
 } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ReplyAllIcon from "@mui/icons-material/ReplyAll";
 import ReplyIcon from "@mui/icons-material/Reply";
+import ChatIcon from "@mui/icons-material/Chat";
+import ChatBubbleIcon from "@mui/icons-material/ChatBubble";
 
 import { Player } from "@player";
-import { FactionName } from "@enums";
+import { FactionName, FactionDiscovery } from "@enums";
 import { Adjuster } from "./Adjuster";
 import { Factions } from "../../Faction/Factions";
 import { getRecordValues } from "../../Types/Record";
 import { getEnumHelper } from "../../utils/EnumHelper";
+import { useRerender } from "../../ui/React/hooks";
 
 const bigNumber = 1e12;
 
 export function FactionsDev(): React.ReactElement {
-  const [factionName, setFactionName] = useState(FactionName.Illuminati);
+  const [selectedFaction, setSelectedFaction] = useState(Factions[FactionName.Illuminati]);
+  const rerender = useRerender();
 
   function setFactionDropdown(event: SelectChangeEvent): void {
     if (!getEnumHelper("FactionName").isMember(event.target.value)) return;
-    setFactionName(event.target.value);
+    setSelectedFaction(Factions[event.target.value]);
   }
 
   function receiveInvite(): void {
-    Player.receiveInvite(factionName);
+    Player.receiveInvite(selectedFaction.name);
+    selectedFaction.alreadyInvited = true;
+    rerender();
   }
 
   function receiveAllInvites(): void {
-    Object.values(FactionName).forEach((faction) => Player.receiveInvite(faction));
+    getRecordValues(Factions).forEach((faction) => {
+      Player.receiveInvite(faction.name);
+      faction.alreadyInvited = true;
+    });
+    rerender();
+  }
+
+  function receiveRumor(): void {
+    Player.receiveRumor(selectedFaction.name);
+    rerender();
+  }
+
+  function receiveAllRumors(): void {
+    getRecordValues(FactionName).forEach((factionName) => Player.receiveRumor(factionName));
+    rerender();
+  }
+
+  function resetAllDiscovery(): void {
+    getRecordValues(Factions).forEach((faction) => (faction.discovery = FactionDiscovery.unknown));
+    Player.factionRumors.clear();
+    rerender();
   }
 
   function modifyFactionRep(modifier: number): (x: number) => void {
     return function (reputation: number): void {
-      const fac = Factions[factionName];
-      if (!isNaN(reputation)) {
-        fac.playerReputation += reputation * modifier;
-      }
+      if (!isNaN(reputation)) selectedFaction.playerReputation += reputation * modifier;
     };
   }
 
   function resetFactionRep(): void {
-    const fac = Factions[factionName];
-    fac.playerReputation = 0;
+    selectedFaction.playerReputation = 0;
   }
 
   function modifyFactionFavor(modifier: number): (x: number) => void {
     return function (favor: number): void {
-      const fac = Factions[factionName];
-      if (!isNaN(favor)) {
-        fac.favor += favor * modifier;
-      }
+      if (!isNaN(favor)) selectedFaction.favor += favor * modifier;
     };
   }
 
   function resetFactionFavor(): void {
-    const fac = Factions[factionName];
-    fac.favor = 0;
+    selectedFaction.favor = 0;
   }
 
   function tonsOfRep(): void {
@@ -93,6 +115,12 @@ export function FactionsDev(): React.ReactElement {
     }
   }
 
+  function setDiscovery(event: React.ChangeEvent<HTMLInputElement>, value: string): void {
+    if (!getEnumHelper("FactionDiscovery").isMember(value)) return;
+    selectedFaction.discovery = value;
+    rerender();
+  }
+
   return (
     <Accordion TransitionProps={{ unmountOnExit: true }}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -112,24 +140,42 @@ export function FactionsDev(): React.ReactElement {
                     labelId="factions-select"
                     id="factions-dropdown"
                     onChange={setFactionDropdown}
-                    value={factionName}
+                    value={selectedFaction.name}
                     startAdornment={
                       <>
-                        <IconButton onClick={receiveAllInvites} size="large" arial-label="receive-all-invitation">
-                          <ReplyAllIcon />
-                        </IconButton>
-                        <IconButton onClick={receiveInvite} size="large" arial-label="receive-one-invitation">
-                          <ReplyIcon />
-                        </IconButton>
+                        <Tooltip title={`Hear rumor about ${selectedFaction.name}`}>
+                          <IconButton onClick={receiveRumor} size="large">
+                            <ChatIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={`Receive invitation to ${selectedFaction.name}`}>
+                          <IconButton onClick={receiveInvite} size="large">
+                            <ReplyIcon />
+                          </IconButton>
+                        </Tooltip>
                       </>
                     }
                   >
-                    {Object.values(Factions).map((faction) => (
+                    {getRecordValues(Factions).map((faction) => (
                       <MenuItem key={faction.name} value={faction.name}>
                         {faction.name}
                       </MenuItem>
                     ))}
                   </Select>
+                </FormControl>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <Typography>Discovery:</Typography>
+              </td>
+              <td>
+                <FormControl>
+                  <RadioGroup onChange={setDiscovery} value={selectedFaction.discovery} row>
+                    {getRecordValues(FactionDiscovery).map((discovery) => (
+                      <FormControlLabel key={discovery} value={discovery} label={discovery} control={<Radio />} />
+                    ))}
+                  </RadioGroup>
                 </FormControl>
               </td>
             </tr>
@@ -161,6 +207,28 @@ export function FactionsDev(): React.ReactElement {
                   subtract={modifyFactionFavor(-1)}
                   reset={resetFactionFavor}
                 />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <Typography>All Factions:</Typography>
+              </td>
+              <td>
+                <Tooltip title="Forget all discovery">
+                  <Button onClick={resetAllDiscovery} size="large">
+                    <ChatBubbleIcon />
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Hear all rumors">
+                  <Button onClick={receiveAllRumors} size="large">
+                    <ChatIcon />
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Receive all invitations">
+                  <Button onClick={receiveAllInvites} size="large">
+                    <ReplyAllIcon />
+                  </Button>
+                </Tooltip>
               </td>
             </tr>
             <tr>

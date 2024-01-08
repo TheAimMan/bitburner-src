@@ -73,7 +73,6 @@ export class Division {
   thisCycleRevenue = 0;
   thisCycleExpenses = 0;
 
-  state: CorpStateName = "START";
   newInd = true;
 
   // Sector 12 office and warehouse are added by default, these entries are added in the constructor.
@@ -134,6 +133,17 @@ export class Division {
     multSum < 1 ? (this.productionMult = 1) : (this.productionMult = multSum);
   }
 
+  calculateRecoupableValue(): number {
+    let price = this.startingCost;
+    for (const city of getRecordKeys(this.offices)) {
+      if (city === CityName.Sector12) continue;
+      price += corpConstants.officeInitialCost;
+      if (this.warehouses[city]) price += corpConstants.warehouseInitialCost;
+    }
+    price /= 2;
+    return price;
+  }
+
   updateWarehouseSizeUsed(warehouse: Warehouse): void {
     warehouse.updateMaterialSizeUsed();
 
@@ -142,9 +152,8 @@ export class Division {
     }
   }
 
-  process(marketCycles = 1, state: CorpStateName, corporation: Corporation): void {
-    this.state = state;
-
+  process(marketCycles = 1, corporation: Corporation): void {
+    const state = corporation.state.nextName;
     //At the start of a cycle, store and reset revenue/expenses
     //Then calculate salaries and process the markets
     if (state === "START") {
@@ -266,6 +275,7 @@ export class Division {
 
   //Process production, purchase, and import/export of materials
   processMaterials(marketCycles = 1, corporation: Corporation): [number, number] {
+    const state = corporation.state.nextName;
     let revenue = 0;
     let expenses = 0;
     this.calculateProductionFactors();
@@ -285,7 +295,7 @@ export class Division {
       const warehouse = this.warehouses[city];
       if (!warehouse) continue;
 
-      switch (this.state) {
+      switch (state) {
         case "PURCHASE": {
           const smartBuy: PartialRecord<CorpMaterialName, [buyAmt: number, reqMat: number]> = {};
 
@@ -708,7 +718,7 @@ export class Division {
         case "START":
           break;
         default:
-          console.error(`Invalid state: ${this.state}`);
+          console.error(`Invalid state: ${state}`);
           break;
       } //End switch(this.state)
       this.updateWarehouseSizeUsed(warehouse);
@@ -718,6 +728,7 @@ export class Division {
 
   /** Process product development and production/sale */
   processProducts(marketCycles = 1, corporation: Corporation): [number, number] {
+    const state = corporation.state.nextName;
     let revenue = 0;
     const expenses = 0;
 
@@ -725,7 +736,7 @@ export class Division {
     for (const [name, product] of this.products) {
       if (!product.finished) {
         // Product still under development
-        if (this.state !== "PRODUCTION") continue;
+        if (state !== "PRODUCTION") continue;
         const city = product.creationCity;
         const office = this.offices[city];
         if (!office) {
@@ -746,11 +757,12 @@ export class Division {
 
   //Processes FINISHED products
   processProduct(marketCycles = 1, product: Product, corporation: Corporation): number {
+    const state = corporation.state.nextName;
     let totalProfit = 0;
     for (const [city, office] of getRecordEntries(this.offices)) {
       const warehouse = this.warehouses[city];
       if (!warehouse) continue;
-      switch (this.state) {
+      switch (state) {
         case "PRODUCTION": {
           //Calculate the maximum production of this material based
           //on the office's productivity
@@ -822,13 +834,13 @@ export class Division {
         }
         case "SALE": {
           //Process sale of Products
-          product.productionCost = 0; //Estimated production cost
+          product.cityData[city].productionCost = 0; //Estimated production cost
           for (const [reqMatName, reqQty] of getRecordEntries(product.requiredMaterials)) {
-            product.productionCost += reqQty * warehouse.materials[reqMatName].marketPrice;
+            product.cityData[city].productionCost += reqQty * warehouse.materials[reqMatName].marketPrice;
           }
 
           // Since its a product, its production cost is increased for labor
-          product.productionCost *= corpConstants.baseProductProfitMult;
+          product.cityData[city].productionCost *= corpConstants.baseProductProfitMult;
 
           // Sale multipliers
           const businessFactor = this.getBusinessFactor(office); //Business employee productivity
@@ -886,33 +898,33 @@ export class Division {
               if (sqrtNumerator === 0) {
                 optimalPrice = 0; // Nothing to sell
               } else {
-                optimalPrice = product.productionCost + markupLimit;
+                optimalPrice = product.cityData[city].productionCost + markupLimit;
                 console.warn(`In Corporation, found illegal 0s when trying to calculate MarketTA2 sale cost`);
               }
             } else {
-              optimalPrice = numerator / denominator + product.productionCost;
+              optimalPrice = numerator / denominator + product.cityData[city].productionCost;
             }
 
             // Store this "optimal Price" in a property so we don't have to re-calculate for UI
             sCost = optimalPrice;
           } else if (product.marketTa1) {
-            sCost = product.productionCost + markupLimit;
+            sCost = product.cityData[city].productionCost + markupLimit;
           } else if (isString(sellPrice)) {
             let sCostString = sellPrice;
             if (product.markup === 0) {
               console.error(`mku is zero, reverting to 1 to avoid Infinity`);
               product.markup = 1;
             }
-            sCostString = sCostString.replace(/MP/g, product.productionCost.toString());
-            sCost = Math.max(product.productionCost, eval(sCostString));
+            sCostString = sCostString.replace(/MP/g, product.cityData[city].productionCost.toString());
+            sCost = Math.max(product.cityData[city].productionCost, eval(sCostString));
           } else {
             sCost = sellPrice;
           }
           product.uiMarketPrice[city] = sCost;
           let markup = 1;
-          if (sCost > product.productionCost) {
-            if (sCost - product.productionCost > markupLimit) {
-              markup = markupLimit / (sCost - product.productionCost);
+          if (sCost > product.cityData[city].productionCost) {
+            if (sCost - product.cityData[city].productionCost > markupLimit) {
+              markup = markupLimit / (sCost - product.cityData[city].productionCost);
             }
           }
 
@@ -942,14 +954,15 @@ export class Division {
         case "EXPORT":
           break;
         default:
-          console.error(`Invalid State: ${this.state}`);
+          console.error(`Invalid State: ${state}`);
           break;
       } //End switch(this.state)
+      this.updateWarehouseSizeUsed(warehouse);
     }
     return totalProfit;
   }
 
-  resetImports(state: string): void {
+  resetImports(state: CorpStateName): void {
     //At the start of the export state, set the imports of everything to 0
     if (state === "EXPORT") {
       for (const warehouse of getRecordValues(this.warehouses)) {

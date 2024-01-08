@@ -1,5 +1,115 @@
 # Changelog
 
+## v2.5.2 - 26 December 2023
+
+### API
+
+- Added limit of 1e9 for additionalMsec property of HGWOptions (@d0sboots)
+- ns.share effect is now boosted by host server core count (@TheAimMan)
+- Fix a bug with HGWOptions that caused the default value to be 1 thread even for scripts running multiple threads (@DJMatch3000)
+- (Singularity) ns.singularity.applyToCompany now returns the JobName if a job was obtained, or null otherwise - previously was boolean (@jjclark1982)
+- (Singularity) ns.singularity.getCurrentWork now requires access to the singularity API (@TheAimMan)
+- (Singularity) Added ns.singularity.getFactionInviteRequirements (@jjclark1982)
+- (Stanek) ns.stanek.chargeFragment is now boosted by host server core count (@TheAimMan)
+
+### BUGFIX
+
+- (Bladeburner) Operation team size modal now handles keyboard submission correctly (@Snarling)
+- (Corporation) Fixed an issue with Warehouse size being out of sync following prduct sale (@Kelenius)
+- (Factions) Fixed some display order issues, and possible multiple entries for a faction (@jjclark1982)
+- (Factions) Fixed an issue with certain factions not becoming "known" when joining them (@jjclark1982)
+- (Grafting) Entropy now has the correct negative effect on hacknet multipliers (@TheAimMan)
+- (Hashnet) Fixed an issue where the SF9.3 reward server had an incorrect number of cores (@cigarmemr)
+- (Terminal) Fixed a bug with script autocompletion when the script is inside a subdirectory (@draughtnyan)
+
+### MISC
+
+- Added basic protection for certain global values that could cause a recovery screen if reassigned (@Snarling)
+- Fixed conditions for an easter egg message (@cigarmemr)
+- (Bitverse) Changed listed difficulty for BN3 to "hard"
+- (CodingContract) Reduce incidence of $0 coding contract rewards in circumstances where the reward would be $0 (@trambelus)
+- (Corporation) Added better accounting of funds transactions (@jjclark1982)
+- (Corporation) Remove cooldown on starting over corporation, but maintain remaining cooldown for selling shares (@jjclark1982)
+- (Corporation) Removed some legacy code that was not doing anything (@catloversg)
+- (DevMenu) Added the ability to add/remove sleeves from the dev menu (@Sphyxis, @Snarling)
+- (Docs) Fixed various typos in documentation (@tdpeuter)
+- (Factions) Added a documentation page for faction join requirements (@jjclark1982)
+- (Formulas) Added clarification for the unit of time returned by hackTime, growTime, and weakenTime functions (@d0sboots)
+- (Ports) Promises from port.nextWrite resolve in the same order they were created, instead of reverse order (@LJNeon)
+- (Sleeve) Add task counters for Crime and Bladeburner tasks (@TheAimMan)
+- (Stock) Add some randomization to timing for stockmarket forecast change events (@Caldwell-74)
+- (Terminal) Added the --all option for unalias, to allow removing all aliases (@Sphyxis)
+- Nerf noodle bar (various contributors)
+
+### UI
+
+- Message for buying TOR router no longer implies the need to connect to darkweb (@Kelenius)
+- (Company) Rework of the job location details (@jjclark1982)
+- (Company) Added previous/next buttons for job location if the player has multiple jobs (@Kelenius)
+- (Factions) Only show warning about enemy factions for factions with enemies (@jjclark1982)
+- (Stanek) Improved the display of the Stanek grid (@Kelenius)
+
+## v2.5.1 - 30 November 2023 Update
+
+### NOTES
+
+For the Steam version, any special options you have enabled in the File menu may need to be reselected after this update, due to a change in how these settings are stored.
+
+### MAJOR ADDITIONS
+
+- Added a faction rumors system, to learn the requirements for joining factions ingame (@jjclark1982)
+
+### API
+
+- (Bladeburner) Added ns.bladeburner.nextUpdate, which allows waiting for the next update of the bladeburner mechanic (@jjclark1982)
+- (Bladeburner) Added ns.bladeburner.getNextBlackOp, which provides name and rank info for the next Black Operation that can be completed (@myCatsName)
+- (Corporation) Added ns.corporation.nextUpdate, which allows waiting for the next update of the corporation mechanic (@jjclark1982)
+- (Corporation) Added a size property to the return value of getProduct (@Caldwell-74)
+- (Corporation) ns.corporation.getCorporation return value: 'state' property is deprecated. Added 'prevState' and 'nextState' properties. (@Caldwell-74)
+- (Gang) Added ns.gang.nextUpdate, which allows waiting for the next update of the gang mechanic (@jjclark1982)
+- (Singularity) Added a JobField enum, and used this for the ns.singularity.applyToCompany function (@alutman)
+- (Singularity) ns.singularity.purchaseProgram now returns true for programs that are already owned even if the player doesn't have enough money to re-buy the program (@ncharris93)
+- (Sleeve) Added nextCompletion promise as a property of sleeve bladeburner work tasks (@Snarling)
+- (Stanek) Added an effect property to getFragment (@TheAimMan)
+- (Stock) Added ns.stock.nextUpdate, which allows waiting for the next update of the stock mechanic (@jjclark1982)
+
+### BUGFIX
+
+- (Bladeburner) Fixed a bug that could allow reaching -1 contracts available (@TheAimMan)
+- (Corporation) Fix an incorrect calculation when adding more employees to an office (@Caldwell-74)
+- (Corporation) Bulk purchase can no longer be used to exceed maximum warehouse capacity (@TheAimMan)
+- (Corporation) Fixed a bug that allowed out-of-order research (@TheAimMan)
+- (Corporation) Product production cost is stored separately for each city (@Caldwell-74)
+- (Sleeve) Sleeve crime work can no longer cause an overflow of %completion when performing quick crimes during bonus time (@TheAimMan)
+- (Stanek) Multipliers from Stanek are now calculated correctly even if the player has Entropy (@yichizhng)
+- (Stanek) Fix a bug where Stanek bonuses were not being removed correctly after a reset (@TheAimMan)
+- Fix an error that would occur in some cases when using gymGains or universityGains (@cigarmemr)
+- Fix tab autocompletion when running a sceript without the run command (@mytskine)
+- Fix a bug that could cause the wrong coding contract to be deleted when using rm (@TheAimMan)
+- Scripts no longer show $0 for offline money income (@alutman)
+- Faction invitations are now cleared properly when performing a reset (@alutman)
+- API functions that work on a hostname no longer work on servers that have not been added to the network. (@TheAimMan)
+- Fix an issue where the "True Recursion" achievement could be granted incorrectly (@jjclark1982)
+
+### MISC
+
+- (Sleeve) Added ability to set a sleeve to idle through the UI (@Sphyxis)
+- Updated lots of dependencies (@Caldwell-74)
+- Updated electron to the latest version (Steam version only) (@Snarling)
+- Various spelling / grammar / wording fixes (@ficocelliguy, @Squirlll, @Warrobot10)
+- Minor reorganization and streamlining in Script Editor code (@Snarling)
+- Tweaked the .lit file referencing Illuminati to give a better idea about joining requirements (@d0sboots)
+- (Steam version) Replaced outdated electron-config with electron-store (@tiziodcaio)
+
+### UI
+
+- (Corporation) Improved the display of corporation state. (@Caldwell-74)
+- (Corporation) Improved various Corporation UIs (@jjclark1982)
+- (Gang) Removed the territory warfare toggle from the main Gang screen (@Tyasuh)
+- Added number of exploits to import savegame comparison (@myCatsName)
+- Dev menu improvements (@myCatsName, @Snarling)
+- Added a credits button on the options page (@myCatsName)
+
 ## v2.5.0 (10/2/2023)
 
 ### NOTES

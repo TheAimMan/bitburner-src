@@ -14,5 +14,7 @@ type SleeveBladeburnerTask = {
   actionName: string;
   cyclesWorked: number;
   cyclesNeeded: number;
+  nextCompletion: Promise<void>;
+  tasksCompleted: number;
 };
 ```

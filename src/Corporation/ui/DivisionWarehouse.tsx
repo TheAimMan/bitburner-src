@@ -10,7 +10,7 @@ import { SmartSupplyModal } from "./modals/SmartSupplyModal";
 import { ProductElem } from "./ProductElem";
 import { MaterialElem } from "./MaterialElem";
 import { MaterialInfo } from "../MaterialInfo";
-
+import { createProgressBarText } from "../../utils/helpers/createProgressBarText";
 import { formatBigNumber, formatMaterialSize } from "../../ui/formatNumber";
 
 import { Corporation } from "../Corporation";
@@ -20,8 +20,9 @@ import { isRelevantMaterial } from "./Helpers";
 import { IndustryProductEquation } from "./IndustryProductEquation";
 import { purchaseWarehouse } from "../Actions";
 import { useCorporation, useDivision } from "./Context";
-
+import { gameCyclesPerCorpStateCycle } from "../data/Constants";
 import { ButtonWithTooltip } from "../../ui/Components/ButtonWithTooltip";
+import { StatsTable } from "../../ui/React/StatsTable";
 
 interface WarehouseProps {
   corp: Corporation;
@@ -54,32 +55,17 @@ function WarehouseRoot(props: WarehouseProps): React.ReactElement {
     if (!canAffordUpgrade) return;
     ++props.warehouse.level;
     props.warehouse.updateSize(corp, division);
-    corp.funds = corp.funds - sizeUpgradeCost;
+    corp.loseFunds(sizeUpgradeCost, "warehouse");
     props.rerender();
   }
-
-  // Next state which will be processed:
-  let stateText;
-  switch (division.state) {
-    case "START":
-      stateText = "Next state: Preparing";
-      break;
-    case "PURCHASE":
-      stateText = "Next state: Purchasing materials";
-      break;
-    case "PRODUCTION":
-      stateText = "Next state: Producing materials and/or products";
-      break;
-    case "SALE":
-      stateText = "Next state: Selling materials and/or products";
-      break;
-    case "EXPORT":
-      stateText = "Next state: Exporting materials and/or products";
-      break;
-    default:
-      console.error(`Invalid state: ${division.state}`);
-      break;
-  }
+  // -1 because as soon as it hits "full" it processes and resets to 0, *2 to double the size of the bar
+  const ticks = (gameCyclesPerCorpStateCycle - 1) * 2;
+  const nextState = corp.state.nextName;
+  const prevState = corp.state.prevName.padStart(11);
+  const stateBar = createProgressBarText({
+    progress: Math.min(corp.storedCycles * 2, ticks) / ticks,
+    totalTicks: ticks,
+  });
 
   // Create React components for materials
   const mats = [];
@@ -110,25 +96,21 @@ function WarehouseRoot(props: WarehouseProps): React.ReactElement {
     }
   }
 
-  const breakdownItems: string[] = [];
+  const breakdownItems: string[][] = [];
   for (const matName of corpConstants.materialNames) {
     const mat = props.warehouse.materials[matName];
     if (mat.stored === 0) continue;
-    breakdownItems.push(`${matName}: ${formatMaterialSize(mat.stored * MaterialInfo[matName].size)}`);
+    breakdownItems.push([`${matName}:`, `${formatMaterialSize(mat.stored * MaterialInfo[matName].size)}`]);
   }
 
   for (const [prodName, product] of division.products) {
-    breakdownItems.push(
-      `${prodName}: ${formatMaterialSize(product.cityData[props.currentCity].stored * product.size)}`,
-    );
+    breakdownItems.push([
+      `${prodName}:`,
+      `${formatMaterialSize(product.cityData[props.currentCity].stored * product.size)}`,
+    ]);
   }
 
-  let breakdown;
-  if (breakdownItems.length > 0) {
-    breakdown = breakdownItems.map((item, i) => <p key={i}>{item}</p>);
-  } else {
-    breakdown = <>No items in storage.</>;
-  }
+  const breakdown = breakdownItems.length > 0 ? <StatsTable rows={breakdownItems} /> : <>No items in storage.</>;
 
   return (
     <Paper>
@@ -159,9 +141,9 @@ function WarehouseRoot(props: WarehouseProps): React.ReactElement {
         divisions.
       </Typography>
       <br />
-
-      <Typography className={classes.retainHeight}>{stateText}</Typography>
-
+      <Typography style={{ whiteSpace: "pre-wrap" }} className={classes.retainHeight}>
+        {prevState} {stateBar} {nextState}
+      </Typography>
       {corp.unlocks.has(CorpUnlockName.SmartSupply) && (
         <>
           <Button onClick={() => setSmartSupplyOpen(true)}>Configure Smart Supply</Button>

@@ -14,6 +14,7 @@ import { dialogBoxCreate } from "../ui/React/DialogBox";
 import { Reviver } from "../utils/JSONReviver";
 import { NetscriptContext } from "../Netscript/APIWrapper";
 import { helpers } from "../Netscript/NetscriptHelpers";
+import { getRandomInt } from "../utils/helpers/getRandomInt";
 
 export let StockMarket: IStockMarket = {
   lastUpdate: 0,
@@ -23,6 +24,8 @@ export let StockMarket: IStockMarket = {
 } as IStockMarket; // Maps full stock name -> Stock object
 // Gross type, needs to be addressed
 export const SymbolToStockMap: Record<string, Stock> = {}; // Maps symbol -> Stock object
+
+export const StockMarketResolvers: ((msProcessed: number) => void)[] = [];
 
 export function placeOrder(
   stock: Stock,
@@ -165,7 +168,7 @@ export function initStockMarket(): void {
 
   StockMarket.storedCycles = 0;
   StockMarket.lastUpdate = 0;
-  StockMarket.ticksUntilCycle = StockMarketConstants.TicksPerCycle;
+  StockMarket.ticksUntilCycle = getRandomInt(1, StockMarketConstants.TicksPerCycle);
   initSymbolToStockMap();
 }
 
@@ -276,5 +279,10 @@ export function processStockPrices(numCycles = 1): void {
 
     // Shares required for price movement gradually approaches max over time
     stock.shareTxUntilMovement = Math.min(stock.shareTxUntilMovement + 10, stock.shareTxForMovement);
+  }
+
+  // Handle "nextUpdate" resolvers after this update
+  for (const resolve of StockMarketResolvers.splice(0)) {
+    resolve(StockMarketConstants.msPerStockUpdate);
   }
 }

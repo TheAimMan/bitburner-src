@@ -13,6 +13,7 @@ import { formatBigNumber, formatPercent } from "../../ui/formatNumber";
 import { isString } from "../../utils/helpers/string";
 import { Money } from "../../ui/React/Money";
 import { useCorporation, useDivision } from "./Context";
+import { StatsTable } from "../../ui/React/StatsTable";
 
 interface IProductProps {
   city: CityName;
@@ -30,26 +31,26 @@ export function ProductElem(props: IProductProps): React.ReactElement {
   const [cancelOpen, setCancelOpen] = useState(false);
   const city = props.city;
   const product = props.product;
-
+  const cityData = product.cityData[city];
   const hasUpgradeDashboard = division.hasResearch("uPgrade: Dashboard");
 
   // Total product gain = production - sale
-  const totalGain = product.cityData[city].productionAmount - product.cityData[city].actualSellAmount;
+  const totalGain = cityData.productionAmount - cityData.actualSellAmount;
 
   // Sell button
   let sellButtonText: JSX.Element;
-  const desiredSellAmount = product.cityData[city].desiredSellAmount;
+  const desiredSellAmount = cityData.desiredSellAmount;
   if (desiredSellAmount !== null) {
     if (isString(desiredSellAmount)) {
       sellButtonText = (
         <>
-          Sell ({formatBigNumber(product.cityData[city].actualSellAmount)}/{desiredSellAmount})
+          Sell ({formatBigNumber(cityData.actualSellAmount)}/{desiredSellAmount})
         </>
       );
     } else {
       sellButtonText = (
         <>
-          Sell ({formatBigNumber(product.cityData[city].actualSellAmount)}/{formatBigNumber(desiredSellAmount)})
+          Sell ({formatBigNumber(cityData.actualSellAmount)}/{formatBigNumber(desiredSellAmount)})
         </>
       );
     }
@@ -63,7 +64,7 @@ export function ProductElem(props: IProductProps): React.ReactElement {
     </>
   );
   // Limit Production button
-  const productionLimit = product.cityData[city].productionLimit;
+  const productionLimit = cityData.productionLimit;
   const limitProductionButtonText =
     "Limit Production" + (productionLimit !== null ? " (" + formatBigNumber(productionLimit) + ")" : "");
 
@@ -89,15 +90,16 @@ export function ProductElem(props: IProductProps): React.ReactElement {
           <Box display="flex">
             <Tooltip
               title={
-                <Typography>
-                  Prod: {formatBigNumber(product.cityData[city].productionAmount)}/s
-                  <br />
-                  Sell: {formatBigNumber(product.cityData[city].actualSellAmount)} /s
-                </Typography>
+                <StatsTable
+                  rows={[
+                    ["Prod:", formatBigNumber(cityData.productionAmount)],
+                    ["Sell:", formatBigNumber(-cityData.actualSellAmount || 0)],
+                  ]}
+                />
               }
             >
               <Typography>
-                {product.name}: {formatBigNumber(product.cityData[city].stored)} ({formatBigNumber(totalGain)}
+                {product.name}: {formatBigNumber(cityData.stored)} ({formatBigNumber(totalGain)}
                 /s)
               </Typography>
             </Tooltip>
@@ -129,13 +131,13 @@ export function ProductElem(props: IProductProps): React.ReactElement {
                 </Typography>
               }
             >
-              <Typography>Effective rating: {formatBigNumber(product.cityData[city].effectiveRating)}</Typography>
+              <Typography>Effective rating: {formatBigNumber(cityData.effectiveRating)}</Typography>
             </Tooltip>
           </Box>
           <Box display="flex">
             <Tooltip title={<Typography>An estimate of the material cost it takes to create this Product.</Typography>}>
               <Typography>
-                Est. Production Cost: <Money money={product.productionCost / corpConstants.baseProductProfitMult} />
+                Est. Production Cost: <Money money={cityData.productionCost / corpConstants.baseProductProfitMult} />
               </Typography>
             </Tooltip>
           </Box>
@@ -149,7 +151,7 @@ export function ProductElem(props: IProductProps): React.ReactElement {
               }
             >
               <Typography>
-                Est. Market Price: <Money money={product.productionCost} />
+                Est. Market Price: <Money money={cityData.productionCost} />
               </Typography>
             </Tooltip>
           </Box>

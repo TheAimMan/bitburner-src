@@ -43,6 +43,8 @@ export interface BlackOpsAttempt {
   action?: BlackOperation;
 }
 
+export const BladeburnerResolvers: ((msProcessed: number) => void)[] = [];
+
 export class Bladeburner {
   numHosp = 0;
   moneyLost = 0;
@@ -114,6 +116,33 @@ export class Bladeburner {
 
   calculateStaminaPenalty(): number {
     return Math.min(1, this.stamina / (0.5 * this.maxStamina));
+  }
+
+  // Todo, deduplicate this functionality
+  getNextBlackOp(): { name: string; rank: number } | null {
+    let blackops: BlackOperation[] = [];
+    for (const blackopName of Object.keys(BlackOperations)) {
+      if (Object.hasOwn(BlackOperations, blackopName)) {
+        blackops.push(BlackOperations[blackopName]);
+      }
+    }
+    blackops.sort(function (a, b) {
+      return a.reqdRank - b.reqdRank;
+    });
+
+    blackops = blackops.filter(
+      (blackop: BlackOperation, i: number) =>
+        !(this.blackops[blackops[i].name] == null && i !== 0 && this.blackops[blackops[i - 1].name] == null),
+    );
+
+    blackops = blackops.reverse();
+    const actionID = this.getActionIdFromTypeAndName("Black Op", "Operation Daedalus");
+
+    return blackops[0].name === "Operation Daedalus" &&
+      actionID !== null &&
+      !this.canAttemptBlackOp(actionID).isAvailable
+      ? null
+      : { name: blackops[0].name, rank: blackops[0].reqdRank };
   }
 
   canAttemptBlackOp(actionId: ActionIdentifier): BlackOpsAttempt {
@@ -301,7 +330,6 @@ export class Bladeburner {
     this.storedCycles += numCycles;
   }
 
-  // working on
   getActionIdFromTypeAndName(type = "", name = ""): ActionIdentifier | null {
     if (type === "" || name === "") {
       return null;
@@ -866,6 +894,9 @@ export class Bladeburner {
     const count = Math.round(sourceCity.pop * percentage);
     sourceCity.pop -= count;
     destCity.pop += count;
+    if (destCity.pop < BladeburnerConstants.PopGrowthCeiling) {
+      destCity.pop += BladeburnerConstants.BasePopGrowth;
+    }
   }
 
   triggerPotentialMigration(sourceCityName: CityName, chance: number): void {
@@ -898,6 +929,9 @@ export class Bladeburner {
       const percentage = getRandomInt(10, 20) / 100;
       const count = Math.round(sourceCity.pop * percentage);
       sourceCity.pop += count;
+      if (sourceCity.pop < BladeburnerConstants.PopGrowthCeiling) {
+        sourceCity.pop += BladeburnerConstants.BasePopGrowth;
+      }
       if (this.logging.events) {
         this.log("Intelligence indicates that a new Synthoid community was formed in a city");
       }
@@ -909,6 +943,9 @@ export class Bladeburner {
         const percentage = getRandomInt(10, 20) / 100;
         const count = Math.round(sourceCity.pop * percentage);
         sourceCity.pop += count;
+        if (sourceCity.pop < BladeburnerConstants.PopGrowthCeiling) {
+          sourceCity.pop += BladeburnerConstants.BasePopGrowth;
+        }
         if (this.logging.events) {
           this.log("Intelligence indicates that a new Synthoid community was formed in a city");
         }
@@ -921,7 +958,9 @@ export class Bladeburner {
         const count = Math.round(sourceCity.pop * percentage);
         sourceCity.pop -= count;
         destCity.pop += count;
-
+        if (destCity.pop < BladeburnerConstants.PopGrowthCeiling) {
+          destCity.pop += BladeburnerConstants.BasePopGrowth;
+        }
         if (this.logging.events) {
           this.log(
             "Intelligence indicates that a Synthoid community migrated from " + sourceCityName + " to some other city",
@@ -933,6 +972,9 @@ export class Bladeburner {
       const percentage = getRandomInt(8, 24) / 100;
       const count = Math.round(sourceCity.pop * percentage);
       sourceCity.pop += count;
+      if (sourceCity.pop < BladeburnerConstants.PopGrowthCeiling) {
+        sourceCity.pop += BladeburnerConstants.BasePopGrowth;
+      }
       if (this.logging.events) {
         this.log(
           "Intelligence indicates that the Synthoid population of " + sourceCityName + " just changed significantly",
@@ -1635,7 +1677,13 @@ export class Bladeburner {
     if (!this.action) {
       throw new Error("Bladeburner.action is not an ActionIdentifier Object");
     }
-
+    //Check to see if action is a contract, and then to verify a sleeve didn't finish it first
+    if (this.action.type === 2) {
+      const remainingActions = this.contracts[this.action.name].count;
+      if (remainingActions < 1) {
+        return this.resetAction();
+      }
+    }
     // If the previous action went past its completion time, add to the next action
     // This is not added immediately in case the automation changes the action
     this.actionTimeCurrent += seconds + this.actionTimeOverflow;
@@ -2035,6 +2083,11 @@ export class Bladeburner {
             this.startAction(this.action);
           }
         }
+      }
+
+      // Handle "nextUpdate" resolvers after this update
+      for (const resolve of BladeburnerResolvers.splice(0)) {
+        resolve(seconds * 1000);
       }
     }
   }

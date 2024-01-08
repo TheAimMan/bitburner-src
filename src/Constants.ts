@@ -9,6 +9,7 @@ export const CONSTANTS: {
   VersionNumber: number;
   MaxSkillLevel: number;
   MilliPerCycle: number;
+  OfflineHackingIncome: number;
   CorpFactionRepRequirement: number;
   BaseFocusBonus: number;
   BaseCostFor1GBOfRamHome: number;
@@ -83,9 +84,9 @@ export const CONSTANTS: {
   Donations: number; // number of blood/plasma/palette donation the dev have verified., boosts NFG
   LatestUpdate: string;
 } = {
-  VersionString: "2.5.1dev",
+  VersionString: "2.6.0dev",
   isDevBranch: true,
-  VersionNumber: 35,
+  VersionNumber: 37,
 
   /** Max level for any skill, assuming no multipliers. Determined by max numerical value in javascript for experience
    * and the skill level formula in Player.js. Note that all this means it that when experience hits MAX_INT, then
@@ -95,6 +96,9 @@ export const CONSTANTS: {
 
   // Milliseconds per game cycle
   MilliPerCycle: 200,
+
+  // Multiplier for hacking income earned from offline scripts
+  OfflineHackingIncome: 0.75,
 
   // How much reputation is needed to join a megacorporation's faction
   CorpFactionRepRequirement: 400e3,
@@ -219,28 +223,37 @@ export const CONSTANTS: {
 
   // Also update doc/source/changelog.rst
   LatestUpdate: `
-## v2.5.1 dev changelog (last updated 10/4/2023)
+## v2.6.0 dev - Changelog last updated 7 Jan 2024
 
-### NOTES
-See 2.5.0 changelog at https://github.com/bitburner-official/bitburner-src/blob/stable/src/Documentation/doc/changelog.md
+### MAJOR ADDITIONS
+
+- A new minigame IPvGO, based on the game Go. For testing, the "IPvGO Subnet" option is permanently enabled right now in the sidebar. Documentation is also available under "How to Play" from that screen. (@ficocelliguy)
+- A new BitNode has been added which focuses on the IPvGO mechanic (@ficocelliguy)
 
 ### API
 
-- ns.singularity.purchaseProgram now returns true for programs that are already owned even if the player doesn't have enough money to re-buy the program (@ncharris93)
-
-### BUGFIX
-
-- Fix an issue where the "True Recursion" achievement could be granted incorrectly (@jjclark1982)
-- (Stanek) Multipliers from Stanek are now calculated correctly even if the player has Entropy (@yichizhng)
-
-### MISC
-
-- Various spelling and grammar fixes for technical API documentation (@ficocelliguy)
+- (Go) Added the ns.go API, which allows interaction with the new IPvGO mechanic. While this is in development, the API may undergo changes. (@ficocelliguy)
+- (Singularity) Add type information for getCurrentWork return value (@Semanual)
+- (Stanek) Fix acceptGift which was not working in 2.5.2 (@jjclark1982)
+- formatNumber now throws an error if specifying a suffixStart less than 1000 (@TheAimMan)
 
 ### UI
 
-- Added number of exploits to import savegame comparison (@myCatsName)
-- Dev menu improvements (@myCatsName)
-- Added a credits button on the options page (@myCatsName)
+- (Corporation) Align columns correctly in warehouse breakdown table (@jjclark1982)
+- (Documentation) Ingame documentation now displays line breaks inside tables correctly (@Snarling)
+- (Documentation) Added a documentation page for converting .script to .js (@LJNeon, @jjclark1982, @Snarling)
+- (Hashnet) Hash upgrade descriptions use proper number formatting options (@Snarling)
+- (Infiltration) Changed how the CheatCodeGame is displayed (@alutman, @Snarling)
+- "Disable Text Effects" option also disables the corrupted text display (@draughtnyan)
+- The "flight" program now displays the related requirements in a more readable way (@TheAimMan)
+- Miscellaneous wording fixes (@cigarmemr)
+
+### MISC
+
+- (CodingContract) Improve parsing of player input for arrays (@rocket3989)
+- (RemoteAPI) Remote API can be targeted to a remote device instead of the default of localhost (@Specker)
+- (ScriptEditor) When importing from other files that are also open in the editor, type information is now available in the IDE (@shyguy1412)
+- Fix inconsistent importing of the arg library (@catloversg)
+- Nerf noodle bar (various)
 `,
 };

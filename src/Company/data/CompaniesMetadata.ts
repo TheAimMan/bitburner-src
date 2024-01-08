@@ -1,14 +1,15 @@
 import { CompanyCtorParams } from "../Company";
 
-import { CompanyName, JobName } from "@enums";
+import { CompanyName, FactionName, JobName } from "@enums";
 import {
-  agentJobs,
+  softwareJobs,
   businessJobs,
-  itJobs,
-  netEngJobs,
   securityJobs,
   softwareConsultJobs,
-  softwareJobs,
+  netEngJobs,
+  itJobs,
+  agentJobs,
+  businessConsultJobs,
 } from "./JobTracks";
 
 export function getCompaniesMetadata(): Record<CompanyName, CompanyCtorParams> {
@@ -24,6 +25,7 @@ export function getCompaniesMetadata(): Record<CompanyName, CompanyCtorParams> {
       expMultiplier: 3,
       salaryMultiplier: 3,
       jobStatReqOffset: 249,
+      relatedFaction: FactionName.ECorp,
     },
     [CompanyName.MegaCorp]: {
       name: CompanyName.MegaCorp,
@@ -31,6 +33,7 @@ export function getCompaniesMetadata(): Record<CompanyName, CompanyCtorParams> {
       expMultiplier: 3,
       salaryMultiplier: 3,
       jobStatReqOffset: 249,
+      relatedFaction: FactionName.MegaCorp,
     },
     [CompanyName.BachmanAndAssociates]: {
       name: CompanyName.BachmanAndAssociates,
@@ -38,6 +41,7 @@ export function getCompaniesMetadata(): Record<CompanyName, CompanyCtorParams> {
       expMultiplier: 2.6,
       salaryMultiplier: 2.6,
       jobStatReqOffset: 224,
+      relatedFaction: FactionName.BachmanAssociates,
     },
     [CompanyName.BladeIndustries]: {
       name: CompanyName.BladeIndustries,
@@ -45,6 +49,7 @@ export function getCompaniesMetadata(): Record<CompanyName, CompanyCtorParams> {
       expMultiplier: 2.75,
       salaryMultiplier: 2.75,
       jobStatReqOffset: 224,
+      relatedFaction: FactionName.BladeIndustries,
     },
     [CompanyName.NWO]: {
       name: CompanyName.NWO,
@@ -52,6 +57,7 @@ export function getCompaniesMetadata(): Record<CompanyName, CompanyCtorParams> {
       expMultiplier: 2.75,
       salaryMultiplier: 2.75,
       jobStatReqOffset: 249,
+      relatedFaction: FactionName.NWO,
     },
     [CompanyName.ClarkeIncorporated]: {
       name: CompanyName.ClarkeIncorporated,
@@ -59,6 +65,7 @@ export function getCompaniesMetadata(): Record<CompanyName, CompanyCtorParams> {
       expMultiplier: 2.25,
       salaryMultiplier: 2.25,
       jobStatReqOffset: 224,
+      relatedFaction: FactionName.ClarkeIncorporated,
     },
     [CompanyName.OmniTekIncorporated]: {
       name: CompanyName.OmniTekIncorporated,
@@ -66,6 +73,7 @@ export function getCompaniesMetadata(): Record<CompanyName, CompanyCtorParams> {
       expMultiplier: 2.25,
       salaryMultiplier: 2.25,
       jobStatReqOffset: 224,
+      relatedFaction: FactionName.OmniTekIncorporated,
     },
     [CompanyName.FourSigma]: {
       name: CompanyName.FourSigma,
@@ -73,6 +81,7 @@ export function getCompaniesMetadata(): Record<CompanyName, CompanyCtorParams> {
       expMultiplier: 2.5,
       salaryMultiplier: 2.5,
       jobStatReqOffset: 224,
+      relatedFaction: FactionName.FourSigma,
     },
     [CompanyName.KuaiGongInternational]: {
       name: CompanyName.KuaiGongInternational,
@@ -80,6 +89,7 @@ export function getCompaniesMetadata(): Record<CompanyName, CompanyCtorParams> {
       expMultiplier: 2.2,
       salaryMultiplier: 2.2,
       jobStatReqOffset: 224,
+      relatedFaction: FactionName.KuaiGongInternational,
     },
     [CompanyName.FulcrumTechnologies]: {
       name: CompanyName.FulcrumTechnologies,
@@ -87,6 +97,7 @@ export function getCompaniesMetadata(): Record<CompanyName, CompanyCtorParams> {
       expMultiplier: 2,
       salaryMultiplier: 2,
       jobStatReqOffset: 224,
+      relatedFaction: FactionName.FulcrumSecretTechnologies,
     },
     [CompanyName.StormTechnologies]: {
       name: CompanyName.StormTechnologies,
@@ -97,14 +108,14 @@ export function getCompaniesMetadata(): Record<CompanyName, CompanyCtorParams> {
     },
     [CompanyName.DefComm]: {
       name: CompanyName.DefComm,
-      companyPositions: [JobName.business5, ...allTechJobs, ...softwareConsultJobs],
+      companyPositions: [JobName.business5, ...allTechJobs, ...softwareConsultJobs, ...businessConsultJobs],
       expMultiplier: 1.75,
       salaryMultiplier: 1.75,
       jobStatReqOffset: 199,
     },
     [CompanyName.HeliosLabs]: {
       name: CompanyName.HeliosLabs,
-      companyPositions: [JobName.business5, ...allTechJobs, ...softwareConsultJobs],
+      companyPositions: [JobName.business5, ...allTechJobs, ...softwareConsultJobs, ...businessConsultJobs],
       expMultiplier: 1.8,
       salaryMultiplier: 1.8,
       jobStatReqOffset: 199,
@@ -139,28 +150,28 @@ export function getCompaniesMetadata(): Record<CompanyName, CompanyCtorParams> {
     },
     [CompanyName.AeroCorp]: {
       name: CompanyName.AeroCorp,
-      companyPositions: [JobName.business3, JobName.business5, ...allTechJobs, ...securityJobs],
+      companyPositions: [JobName.business3, JobName.business5, ...allTechJobs, ...securityJobs, ...businessConsultJobs],
       expMultiplier: 1.7,
       salaryMultiplier: 1.7,
       jobStatReqOffset: 199,
     },
     [CompanyName.OmniaCybersystems]: {
       name: CompanyName.OmniaCybersystems,
-      companyPositions: [JobName.business3, JobName.business5, ...allTechJobs, ...securityJobs],
+      companyPositions: [JobName.business3, JobName.business5, ...allTechJobs, ...securityJobs, ...businessConsultJobs],
       expMultiplier: 1.7,
       salaryMultiplier: 1.7,
       jobStatReqOffset: 199,
     },
     [CompanyName.SolarisSpaceSystems]: {
       name: CompanyName.SolarisSpaceSystems,
-      companyPositions: [JobName.business3, JobName.business5, ...allTechJobs, ...securityJobs],
+      companyPositions: [JobName.business3, JobName.business5, ...allTechJobs, ...securityJobs, ...businessConsultJobs],
       expMultiplier: 1.7,
       salaryMultiplier: 1.7,
       jobStatReqOffset: 199,
     },
     [CompanyName.DeltaOne]: {
       name: CompanyName.DeltaOne,
-      companyPositions: [JobName.business3, JobName.business5, ...allTechJobs, ...securityJobs],
+      companyPositions: [JobName.business3, JobName.business5, ...allTechJobs, ...securityJobs, ...businessConsultJobs],
       expMultiplier: 1.6,
       salaryMultiplier: 1.6,
       jobStatReqOffset: 199,

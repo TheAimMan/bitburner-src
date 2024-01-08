@@ -15,7 +15,7 @@ import * as corpConstants from "../data/Constants";
 import { CorpUnlocks } from "../data/CorporationUnlocks";
 
 import { CONSTANTS } from "../../Constants";
-import { formatCorpStat, formatPercent, formatShares } from "../../ui/formatNumber";
+import { formatCorpMultiplier, formatPercent, formatShares } from "../../ui/formatNumber";
 import { convertTimeMsToTimeElapsedString } from "../../utils/StringHelperFunctions";
 import { Money } from "../../ui/React/Money";
 import { MoneyRate } from "../../ui/React/MoneyRate";
@@ -45,7 +45,7 @@ export function Overview({ rerender }: IProps): React.ReactElement {
   const multRows: string[][] = [];
   function appendMult(name: string, value: number): void {
     if (value === 1) return;
-    multRows.push([name, formatCorpStat(value)]);
+    multRows.push([name, formatCorpMultiplier(value)]);
   }
   appendMult("Production Multiplier: ", corp.getProductionMultiplier());
   appendMult("Storage Multiplier: ", corp.getStorageMultiplier());
@@ -79,18 +79,18 @@ export function Overview({ rerender }: IProps): React.ReactElement {
               rows={[
                 [
                   "Owned Stock Shares:",
-                  <>&nbsp;{formatShares(corp.numShares)}&nbsp;</>,
-                  <>({formatPercent(corp.numShares / corp.totalShares)})</>,
+                  formatShares(corp.numShares),
+                  `(${formatPercent(corp.numShares / corp.totalShares)})`,
                 ],
                 [
                   "Outstanding Shares:",
-                  <>&nbsp;{formatShares(corp.issuedShares)}&nbsp;</>,
-                  <>({formatPercent(corp.issuedShares / corp.totalShares)})</>,
+                  formatShares(corp.issuedShares),
+                  `(${formatPercent(corp.issuedShares / corp.totalShares)})`,
                 ],
                 [
                   "Private Shares:",
-                  <>&nbsp;{formatShares(corp.investorShares)}&nbsp;</>,
-                  <>({formatPercent(corp.investorShares / corp.totalShares)})</>,
+                  formatShares(corp.investorShares),
+                  `(${formatPercent(corp.investorShares / corp.totalShares)})`,
                 ],
               ]}
             />
@@ -246,7 +246,7 @@ function PublicButtons({ rerender }: IPublicButtonsProps): React.ReactElement {
       </ButtonWithTooltip>
       <SellSharesModal open={sellSharesOpen} onClose={() => setSellSharesOpen(false)} rerender={rerender} />
       <ButtonWithTooltip
-        normalTooltip={"Buy back shares you that previously issued or sold on the market"}
+        normalTooltip={"Buy back outstanding shares that you previously issued or sold on the market"}
         disabledTooltip={corp.issuedShares < 1 ? "No shares available to buy back" : ""}
         onClick={() => setBuybackSharesOpen(true)}
       >
@@ -319,22 +319,13 @@ function SellDivisionButton(): React.ReactElement {
 function RestartButton(): React.ReactElement {
   const [open, setOpen] = useState(false);
 
-  const corp = useCorporation();
-  const sellSharesOnCd = corp.shareSaleCooldown > 0;
-
   function restart(): void {
     setOpen(true);
   }
 
   return (
     <>
-      <ButtonWithTooltip
-        normalTooltip={"Sell corporation and start over"}
-        disabledTooltip={
-          sellSharesOnCd ? "Sell corporation and start over. Cannot do this while Sell Shares is on cooldown." : ""
-        }
-        onClick={restart}
-      >
+      <ButtonWithTooltip normalTooltip={"Sell corporation and start over"} onClick={restart}>
         Sell CEO position
       </ButtonWithTooltip>
       <SellCorporationModal open={open} onClose={() => setOpen(false)} />

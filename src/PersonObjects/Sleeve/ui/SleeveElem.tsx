@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { CrimeType, FactionWorkType } from "@enums";
 import { CONSTANTS } from "../../../Constants";
 import { Player } from "@player";
-import { formatPercent } from "../../../ui/formatNumber";
+import { formatPercent, formatInt } from "../../../ui/formatNumber";
 import { ProgressBar } from "../../../ui/React/Progress";
 import { Sleeve } from "../Sleeve";
 import { MoreStatsModal } from "./MoreStatsModal";
@@ -31,15 +31,17 @@ function getWorkDescription(sleeve: Sleeve, progress: number): string {
       return "This sleeve is currently set to synchronize with the original consciousness. This causes the Sleeve's synchronization to increase.";
     case SleeveWorkType.BLADEBURNER:
       return (
-        `This sleeve is currently attempting to perform ${work.actionName}.\n\n` +
-        `Progress: ${formatPercent(progress)}`
+        `This sleeve is currently attempting to perform ${work.actionName}.\n\nTasks Completed: ${formatInt(
+          work.tasksCompleted,
+        )}\n \n` + `Progress: ${formatPercent(progress)}`
       );
     case SleeveWorkType.CRIME: {
       const crime = work.getCrime();
       return (
         `This sleeve is currently attempting ${crime.workName} (Success Rate: ${formatPercent(
           crime.successRate(sleeve),
-        )}).\n\n` + `Progress: ${formatPercent(progress)}`
+        )}).\n\nTasks Completed: ${formatInt(work.tasksCompleted)} 
+		\n` + `Progress: ${formatPercent(progress)}`
       );
     }
     case SleeveWorkType.FACTION: {
@@ -69,11 +71,12 @@ export function SleeveElem(props: SleeveElemProps): React.ReactElement {
   const [travelOpen, setTravelOpen] = useState(false);
   const [augmentationsOpen, setAugmentationsOpen] = useState(false);
 
-  const [abc, setABC] = useState(["------", "------", "------"]);
+  const [abc, setABC] = useState(["Idle", "------", "------"]);
 
   function setTask(): void {
     switch (abc[0]) {
-      case "------":
+      case "Idle":
+        props.sleeve.stopWork();
         break;
       case "Work for Company":
         if (getEnumHelper("CompanyName").isMember(abc[1])) props.sleeve.workForCompany(abc[1]);

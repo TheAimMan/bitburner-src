@@ -16,18 +16,19 @@ import * as generalMethods from "./PlayerObjectGeneralMethods";
 import * as serverMethods from "./PlayerObjectServerMethods";
 import * as workMethods from "./PlayerObjectWorkMethods";
 
-import { setPlayer } from "../../Player";
+import { setPlayer } from "@player";
 import { CompanyName, FactionName, JobName, LocationName } from "@enums";
 import { HashManager } from "../../Hacknet/HashManager";
 import { MoneySourceTracker } from "../../utils/MoneySourceTracker";
 import { constructorsForReviver, Generic_toJSON, Generic_fromJSON, IReviverValue } from "../../utils/JSONReviver";
-import { JSONMap } from "../../Types/Jsonable";
+import { JSONMap, JSONSet } from "../../Types/Jsonable";
 import { cyrb53 } from "../../utils/StringHelperFunctions";
 import { getRandomInt } from "../../utils/helpers/getRandomInt";
 import { CONSTANTS } from "../../Constants";
 import { Person } from "../Person";
 import { isMember } from "../../utils/EnumHelper";
 import { PartialRecord } from "../../Types/Record";
+import { getGoPlayerStartingState } from "../../Go/boardState/goConstants";
 
 export class PlayerObject extends Person implements IPlayer {
   // Player-specific properties
@@ -36,8 +37,10 @@ export class PlayerObject extends Person implements IPlayer {
   gang: Gang | null = null;
   bladeburner: Bladeburner | null = null;
   currentServer = "";
+  go = getGoPlayerStartingState();
   factions: FactionName[] = [];
   factionInvitations: FactionName[] = [];
+  factionRumors = new JSONSet<FactionName>();
   hacknetNodes: (HacknetNode | string)[] = []; // HacknetNode object or hostname of Hacknet Server
   has4SData = false;
   has4SDataTixApi = false;
@@ -78,19 +81,6 @@ export class PlayerObject extends Person implements IPlayer {
   startWork = workMethods.startWork;
   processWork = workMethods.processWork;
   finishWork = workMethods.finishWork;
-  applyForSoftwareJob = generalMethods.applyForSoftwareJob;
-  applyForSoftwareConsultantJob = generalMethods.applyForSoftwareConsultantJob;
-  applyForItJob = generalMethods.applyForItJob;
-  applyForSecurityEngineerJob = generalMethods.applyForSecurityEngineerJob;
-  applyForNetworkEngineerJob = generalMethods.applyForNetworkEngineerJob;
-  applyForBusinessJob = generalMethods.applyForBusinessJob;
-  applyForBusinessConsultantJob = generalMethods.applyForBusinessConsultantJob;
-  applyForSecurityJob = generalMethods.applyForSecurityJob;
-  applyForAgentJob = generalMethods.applyForAgentJob;
-  applyForEmployeeJob = generalMethods.applyForEmployeeJob;
-  applyForPartTimeEmployeeJob = generalMethods.applyForPartTimeEmployeeJob;
-  applyForWaiterJob = generalMethods.applyForWaiterJob;
-  applyForPartTimeWaiterJob = generalMethods.applyForPartTimeWaiterJob;
   applyForJob = generalMethods.applyForJob;
   canAccessBladeburner = bladeburnerMethods.canAccessBladeburner;
   canAccessCorporation = corporationMethods.canAccessCorporation;
@@ -131,6 +121,7 @@ export class PlayerObject extends Person implements IPlayer {
   createHacknetServer = serverMethods.createHacknetServer;
   queueAugmentation = generalMethods.queueAugmentation;
   receiveInvite = generalMethods.receiveInvite;
+  receiveRumor = generalMethods.receiveRumor;
   gainCodingContractReward = generalMethods.gainCodingContractReward;
   stopFocusing = generalMethods.stopFocusing;
   prestigeAugmentation = generalMethods.prestigeAugmentation;

@@ -651,7 +651,7 @@ function evaluateVersionCompatibility(ver: string | number): void {
       let valuation = oldCorp.valuation * 2 + oldCorp.revenue * 100;
       if (isNaN(valuation)) valuation = 300e9;
       Player.startCorporation(String(oldCorp.name), !!oldCorp.seedFunded);
-      Player.corporation?.addFunds(valuation);
+      Player.corporation?.gainFunds(valuation, "force majeure");
       Terminal.warn("Loading corporation from version prior to 2.3. Corporation has been reset.");
     }
     // End 2.3 changes
@@ -716,7 +716,7 @@ function loadGame(saveString: string): boolean {
   setPlayer(loadPlayer(saveObj.PlayerSave));
   loadAllServers(saveObj.AllServersSave);
   loadCompanies(saveObj.CompaniesSave);
-  loadFactions(saveObj.FactionsSave);
+  loadFactions(saveObj.FactionsSave, Player);
 
   if (Object.hasOwn(saveObj, "StaneksGiftSave")) {
     loadStaneksGift(saveObj.StaneksGiftSave);

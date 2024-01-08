@@ -177,11 +177,6 @@ export class OfficeSpace {
 
   hireRandomEmployee(position: CorpEmployeeJob): boolean {
     if (this.atCapacity()) return false;
-    if (document.getElementById("cmpy-mgmt-hire-employee-popup") != null) return false;
-
-    ++this.numEmployees;
-    ++this.employeeJobs[position];
-    ++this.employeeNextJobs[position];
 
     this.totalExperience += getRandomInt(50, 100);
 
@@ -192,6 +187,10 @@ export class OfficeSpace {
     this.avgCharisma = (this.avgCharisma * this.numEmployees + getRandomInt(50, 100)) / (this.numEmployees + 1);
     this.avgCreativity = (this.avgCreativity * this.numEmployees + getRandomInt(50, 100)) / (this.numEmployees + 1);
     this.avgEfficiency = (this.avgEfficiency * this.numEmployees + getRandomInt(50, 100)) / (this.numEmployees + 1);
+
+    ++this.numEmployees;
+    ++this.employeeJobs[position];
+    ++this.employeeNextJobs[position];
     return true;
   }
 
