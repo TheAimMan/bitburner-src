@@ -335,7 +335,7 @@ function validateHGWOptions(ctx: NetscriptContext, opts: unknown): CompleteHGWOp
   result.hackLimit = number(ctx, "opts.hackLimit", options.hackLimit ?? 1);
   if(result.hackLimit>1 || result.hackLimit<=0)
   {
-	 throw makeRuntimeErrorMsg(ctx, `Hack Limit must be a positive integer and can not be greater than 1`);
+	 throw makeRuntimeErrorMsg(ctx, `Hack Limit must be greater and 0 and less than or equal to 1. (ex. .25 would be equal to 25% of total money hacked)');
   }
   
   return result;
