@@ -513,7 +513,7 @@ function hack(ctx: NetscriptContext, hostname: string, manual: boolean, opts: un
       // Success!
       let percentHacked = calculatePercentMoneyHacked(server, Player);
 	  if (percentHacked>hackLimit)
-	  {percentHacked = hackLimit
+	  {percentHacked = hackLimit/threads
 	  }
       let maxThreadNeeded = Math.ceil(1 / percentHacked);
       if (isNaN(maxThreadNeeded)) {
