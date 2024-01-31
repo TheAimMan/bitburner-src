@@ -29,6 +29,9 @@ export class RunningScript {
 
   // Script filename
   filename = "default.js" as ScriptFilePath;
+  
+  //Maximum percentage of money stolen
+  hackLimit = 1
 
   // This script's logs. An array of log entries
   logs: React.ReactNode[] = [];

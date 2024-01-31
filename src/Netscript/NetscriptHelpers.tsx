@@ -89,6 +89,7 @@ export interface CompleteHGWOptions {
   threads: PositiveInteger;
   stock: boolean;
   additionalMsec: number;
+  hackLimit: number;
 }
 
 export function assertString(ctx: NetscriptContext, argName: string, v: unknown): asserts v is string {
@@ -299,6 +300,7 @@ function validateHGWOptions(ctx: NetscriptContext, opts: unknown): CompleteHGWOp
     threads: ctx.workerScript.scriptRef.threads,
     stock: false,
     additionalMsec: 0,
+	hackLimit:1,
   };
   if (opts == null) {
     return result;
@@ -330,7 +332,12 @@ function validateHGWOptions(ctx: NetscriptContext, opts: unknown): CompleteHGWOp
     }
     result.threads = positiveThreads;
   }
-
+  result.hackLimit = number(ctx, "opts.hackLimit", options.hackLimit ?? 1);
+  if(result.hackLimit>1 || result.hackLimit<=0)
+  {
+	 throw makeRuntimeErrorMsg(ctx, `Hack Limit must be a positive integer and can not be greater than 1`);
+  }
+  
   return result;
 }
 
@@ -466,8 +473,9 @@ function isScriptArgs(args: unknown): args is ScriptArg[] {
 }
 
 function hack(ctx: NetscriptContext, hostname: string, manual: boolean, opts: unknown): Promise<number> {
+  debugger
   const ws = ctx.workerScript;
-  const { threads, stock, additionalMsec } = validateHGWOptions(ctx, opts);
+  const { threads, stock, additionalMsec, hackLimit } = validateHGWOptions(ctx, opts);
   const server = getServer(ctx, hostname);
   if (!(server instanceof Server)) {
     throw makeRuntimeErrorMsg(ctx, "Cannot be executed on this server.");
@@ -482,6 +490,9 @@ function hack(ctx: NetscriptContext, hostname: string, manual: boolean, opts: un
   if (!canHack.res) {
     throw makeRuntimeErrorMsg(ctx, canHack.msg || "");
   }
+  if (hackLimit)
+  {ws.scriptRef.hackLimit = hackLimit
+  }
 
   log(
     ctx,
@@ -493,13 +504,17 @@ function hack(ctx: NetscriptContext, hostname: string, manual: boolean, opts: un
   );
 
   return helpers.netscriptDelay(ctx, hackingTime * 1000).then(function () {
+	debugger
     const hackChance = calculateHackingChance(server, Player);
     const rand = Math.random();
     let expGainedOnSuccess = calculateHackingExpGain(server, Player) * threads;
     const expGainedOnFailure = expGainedOnSuccess / 4;
     if (rand < hackChance) {
       // Success!
-      const percentHacked = calculatePercentMoneyHacked(server, Player);
+      let percentHacked = calculatePercentMoneyHacked(server, Player);
+	  if (percentHacked>hackLimit)
+	  {percentHacked = hackLimit
+	  }
       let maxThreadNeeded = Math.ceil(1 / percentHacked);
       if (isNaN(maxThreadNeeded)) {
         // Server has a 'max money' of 0 (probably). We'll set this to an arbitrarily large value
