@@ -59,7 +59,7 @@ import { AlertManager } from "./React/AlertManager";
 import { PromptManager } from "./React/PromptManager";
 import { FactionInvitationManager } from "../Faction/ui/FactionInvitationManager";
 import { calculateAchievements } from "../Achievements/Achievements";
-
+import { inviteToFaction } from "../Faction/FactionHelpers";
 import { RecoveryMode, RecoveryRoot } from "./React/RecoveryRoot";
 import { AchievementsRoot } from "../Achievements/AchievementsRoot";
 import { ErrorBoundary } from "./ErrorBoundary";
@@ -281,6 +281,10 @@ export function GameRoot(): React.ReactElement {
       break;
     }
     case Page.Factions: {
+      const invitedFactions = Player.checkForFactionInvitations();
+      for (const invitedFaction of invitedFactions) {
+        inviteToFaction(invitedFaction);
+      }
       mainPage = <FactionsRoot />;
       break;
     }
