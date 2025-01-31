@@ -59,7 +59,6 @@ import { AlertManager } from "./React/AlertManager";
 import { PromptManager } from "./React/PromptManager";
 import { FactionInvitationManager } from "../Faction/ui/FactionInvitationManager";
 import { calculateAchievements } from "../Achievements/Achievements";
-import { Engine } from "../engine";
 import { RecoveryMode, RecoveryRoot } from "./React/RecoveryRoot";
 import { AchievementsRoot } from "../Achievements/AchievementsRoot";
 import { ErrorBoundary } from "./ErrorBoundary";
@@ -281,8 +280,6 @@ export function GameRoot(): React.ReactElement {
       break;
     }
     case Page.Factions: {
-      Engine.Counters.checkFactionInvitations = 0;
-      Engine.checkCounters();
       mainPage = <FactionsRoot />;
       break;
     }
