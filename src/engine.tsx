@@ -160,7 +160,7 @@ const Engine: {
     updateActiveScriptsDisplay: 5,
     createProgramNotifications: 10,
     augmentationsNotifications: 10,
-    checkFactionInvitations: 10
+    checkFactionInvitations: 10,
     passiveFactionGrowth: 5,
     messages: 150,
     mechanicProcess: 5, // Process Bladeburner
